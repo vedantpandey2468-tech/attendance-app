@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Attendance App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+    }
+
+    .main {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .container {
+      flex: 2;
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .sidebar {
+      flex: 1;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      height: fit-content;
+    }
+
+    h2 {
+      margin-top: 20px;
+      color: #333;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: #f1f3f5;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+    }
+
+    .header {
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #007bff;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="main">
+
+  <!-- LEFT SIDE -->
+  <div class="container">
+
+    <div class="header">📊 Attendance Manager</div>
+
+    <h2>Add Employee</h2>
+    <input id="empName" placeholder="Enter employee name">
+    <button onclick="addEmployee()">Add Employee</button>
+
+    <h2>Mark Attendance</h2>
+    <select id="employee"></select>
+
+    <select id="status">
+      <option value="Present">✅ Present</option>
+      <option value="Absent">❌ Absent</option>
+    </select>
+
+    <button onclick="markAttendance()">Submit Attendance</button>
+
+    <h2>Monthly Report</h2>
+    <input type="month" id="month">
+    <button onclick="loadReport()">Load Report</button>
+
+    <ul id="report"></ul>
+
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="sidebar">
+    <h2>👥 Employees</h2>
+    <ul id="employeeList"></ul>
+  </div>
+
+</div>
+
+<script>
+const API = "http://localhost:3000";
+
+// Load employees (both dropdown + side list)
+async function loadEmployees() {
+  const res = await fetch(API + "/employees");
+  const data = await res.json();
+
+  const select = document.getElementById("employee");
+  const list = document.getElementById("employeeList");
+
+  select.innerHTML = "";
+  list.innerHTML = "";
+
+  data.forEach(emp => {
+    // Dropdown
+    const option = document.createElement("option");
+    option.value = emp.id;
+    option.text = emp.name;
+    select.appendChild(option);
+
+    // Sidebar list
+    const li = document.createElement("li");
+    li.innerText = emp.name;
+    list.appendChild(li);
+  });
+}
+
+// Add employee
+async function addEmployee() {
+  const name = document.getElementById("empName").value;
+
+  await fetch(API + "/add-employee", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ name })
+  });
+
+  document.getElementById("empName").value = "";
+  loadEmployees();
+}
+
+// Mark attendance
+async function markAttendance() {
+  const employee_id = document.getElementById("employee").value;
+  const status = document.getElementById("status").value;
+
+  await fetch(API + "/mark", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ employee_id, status })
+  });
+
+  alert("Attendance Recorded ✔");
+}
+
+// Load report
+async function loadReport() {
+  const month = document.getElementById("month").value;
+
+  const res = await fetch(API + "/report/" + month);
+  const data = await res.json();
+
+  const list = document.getElementById("report");
+  list.innerHTML = "";
+
+  data.forEach(r => {
+    const li = document.createElement("li");
+    li.innerText = `${r.date} — ${r.name} — ${r.status}`;
+    list.appendChild(li);
+  });
+}
+
+loadEmployees();
+</script>
+
+</body>
+</html>
