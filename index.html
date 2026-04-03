@@ -141,8 +141,29 @@ async function loadEmployees() {
 
     // Sidebar list
     const li = document.createElement("li");
-    li.innerText = emp.name;
-    list.appendChild(li);
+li.style.display = "flex";
+li.style.justifyContent = "space-between";
+li.style.alignItems = "center";
+
+const nameSpan = document.createElement("span");
+nameSpan.innerText = emp.name;
+
+// Delete button
+const delBtn = document.createElement("button");
+delBtn.innerText = "❌";
+delBtn.style.width = "40px";
+delBtn.style.background = "red";
+
+delBtn.onclick = async () => {
+  await fetch(API + "/delete-employee/" + emp.id, {
+    method: "DELETE"
+  });
+  loadEmployees();
+};
+
+li.appendChild(nameSpan);
+li.appendChild(delBtn);
+list.appendChild(li);
   });
 }
 
