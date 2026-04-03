@@ -66,6 +66,15 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+// Delete employee
+app.delete("/delete-employee/:id", (req, res) => {
+  const id = req.params.id;
+
+  db.run("DELETE FROM attendance WHERE employee_id = ?", [id]);
+  db.run("DELETE FROM employees WHERE id = ?", [id]);
+
+  res.sendStatus(200);
+});
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
